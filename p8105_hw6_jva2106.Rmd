@@ -35,3 +35,26 @@ hom_df = read_csv("https://raw.githubusercontent.com/washingtonpost/data-homicid
 
 ```
 
+Let us now use the glm function to fit a logistic regression for the city of Baltimore, M.D. wherein the outcome is dichotomous (resolved vs unresolved) and the predictors are victim age, sex and race. Additionally, let us obtain the estimate and confidence interval of the adjusted odds ratio for solving homicides comparing non-white victims to white victims keeping all the other variables constant.
+
+```{r}
+
+balt_df = hom_df %>% 
+  filter(city_with_state == "Baltimore, MD")
+
+logis_balt = glm(solved ~ victim_age + victim_sex + colpsd_victim_race, data = balt_df, family = binomial())
+
+logis_balt %>% broom::tidy() %>% 
+  janitor::clean_names() %>% 
+  mutate(OR = exp(estimate),
+         lower_95_ci = exp(estimate - (1.96 * std_error)),
+         upper_95_ci = exp(estimate + (1.96 * std_error))) %>% 
+  filter(term == "colpsd_victim_racenon-white") %>% 
+  select(OR, lower_95_ci, upper_95_ci) %>% 
+  knitr::kable(digits = 3)
+
+```
+
+From the above, we know the odds of solving homicides in non-white victims vs white victims is 0.441 after adjusting for sex and age. We are also 95% confident that the odss lie between 0.31 and 0.62.
+
+Next, we will run the glm function for each one of the cities and extract the adjusted odds ratio and CI for solving homicides comparing non-white victims to white victims.
