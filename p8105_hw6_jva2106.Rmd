@@ -7,6 +7,7 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(message = FALSE)
 ```
 
 Installing the required libraries
@@ -14,5 +15,23 @@ Installing the required libraries
 ```{r}
 library(tidyverse)
 library(modelr)
+```
+
+Problem 1
+Reading in the dataset using read_csv. We will now create a city_with_state variable (e.g. “Baltimore, MD”), and a binary variable showing if the homicide was solved. Additionally, we will also remove the follwing states - Phoenix, AZ; Dallas, TX; and Kansas City, MO as these states do not report the victim's races and also Tulsa, AL as this seems to be an error in data entry.
+
+Next we will modify victim_race such that it has the categories white and non-white, making white the reference category and making victim_age numeric.
+
+```{r}
+hom_df = read_csv("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv", col_names = TRUE) %>% 
+  mutate(city_with_state = str_c(city, ",", " ", state),
+         solved = if_else(disposition == "Closed by arrest", "resolved", "unresolved"),
+         solved = fct_relevel(solved, "unresolved"),
+         victim_race = tolower(victim_race),
+         colpsd_victim_race = fct_collapse(victim_race, "non-white" = c("asian","black", "hispanic", "other", "unknown")),
+         colpsd_victim_race = fct_relevel(colpsd_victim_race, "white"),
+         victim_age = as.numeric(victim_age)) %>% 
+  filter(!(city_with_state %in% c("Phoenix, AZ", "Dallas, TX", "Kansas City, MO", "Tulsa, AL")))
+
 ```
 
