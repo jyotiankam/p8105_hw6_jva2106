@@ -125,4 +125,15 @@ We find no missing obervations for the variables.
 
 The hypothesis is that the gestational age in weeks is associated with baby's birthweight. We will adjust for baby's sex, mother age, sex, race, weight gain and average number of cigarettes smoked daily during pregnancy to test this hypothesis. Since the outcome of interest is continuous, we can do linear regression.
 
-Let us now look at the distribution of the two variables.
+Let us now look at the distribution of the two variables - gestational age in weeks and birthweight and plot a graph showing the correlation.
+
+```{r}
+
+ggplot(child_df, aes(x = gaweeks)) + geom_histogram()
+
+ggplot(child_df, aes(x = bwt)) + geom_histogram()
+
+ggplot(child_df, aes(x = gaweeks, y = bwt)) + geom_point() + geom_smooth(method = lm)
+
+```
+
