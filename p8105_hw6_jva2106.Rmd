@@ -86,3 +86,20 @@ logis_cities = hom_df %>%
 
 ```
 
+Let us create a plot showing the estimated ORs and CIs for each city.
+
+```{r}
+
+ggplot(logis_cities, aes(x = city_with_state, y = OR)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymin = lower_95_ci, ymax = upper_95_ci)) + 
+  coord_flip() +
+  geom_hline(aes(yintercept = 1.00), linetype = "dashed", color = "blue") + 
+  labs(
+    y = "OR (95% Confidence interval)",
+    x = "City, State"
+  )
+
+```
+
+With the exceptions of Birmingham, Tampa, Durham, we see that in almost all of the cities the odds ratio lies below 1.0. This indicates that in almost all of the cities, the odds of solving a homicide for non-whites is less than that of the white category, after cotrolling for sex and age. However, since the confidence intervals of almost about half of those include the null value of 1, we can conclude that they are not statistically significant.
