@@ -63,16 +63,16 @@ Next, we will run the glm function for each one of the cities and extract the ad
 
 logis_cities = hom_df %>% 
   
-  # Selecting only the variables needed
+  # variable selection
   select(city_with_state, solved, victim_age, victim_sex, colpsd_victim_race) %>%
-  # Making list columns to use for the iteration
+  
+  # Iterations
   group_by(city_with_state) %>% 
   nest() %>% 
   
-  # Using maps to iterate the glm and tidy functions
-  mutate(models = map(.x = data, ~ glm(solved ~ victim_sex + colpsd_victim_race + victim_age, 
-                                      family = binomial, data = .x)),
-         models = map(models, broom::tidy)) %>% 
+  # Using maps for iterating the tidy and glm functions
+  mutate(models = map(.x = data, ~ glm(solved ~ victim_sex + colpsd_victim_race + victim_age, family = binomial, data = .x)),
+  models = map(models, broom::tidy)) %>% 
   select(-data) %>% unnest() %>% 
   filter(term == "colpsd_victim_racenon-white") %>% 
   mutate(OR = exp(estimate),
@@ -81,7 +81,7 @@ logis_cities = hom_df %>%
          upper_95_ci = exp(estimate + (1.96*std.error))) %>% 
   select(city_with_state, OR, lower_95_ci, upper_95_ci) %>% 
   
-  # Organizing cities according to estimated OR from the lowest to highest
+  # Organizing cities from the lowest to the highest as per estimated ORs 
   mutate(city_with_state = reorder(city_with_state, OR))
 
 ```
@@ -102,4 +102,23 @@ ggplot(logis_cities, aes(x = city_with_state, y = OR)) +
 
 ```
 
-With the exceptions of Birmingham, Tampa, Durham, we see that in almost all of the cities the odds ratio lies below 1.0. This indicates that in almost all of the cities, the odds of solving a homicide for non-whites is less than that of the white category, after cotrolling for sex and age. However, since the confidence intervals of almost about half of those include the null value of 1, we can conclude that they are not statistically significant.
+With the exceptions of Birmingham, Tampa, Durham, we see that in almost all of the cities the odds ratio lies below 1.0. This indicates that in almost all of the cities, the odds of solving a homicide for non-whites is less than that of the white category, after cotrolling for sex and age. However, since the confidence intervals for almost about half of those include the null value of 1, we can conclude that these results are not statistically significant.
+
+Problem 2
+
+```{r}
+
+child_df = read_csv("./data/birthweight.csv") %>% 
+  mutate(babysex = as.factor(babysex),
+         frace = as.factor(frace),
+         mrace = as.factor(mrace),
+         malform = as.factor(malform))
+
+# let us now check if there are missing variables in any of the observations
+filter_all(child_df, any_vars(is.na(.)))
+
+sum(is.na(hom_df))
+
+```
+
+
