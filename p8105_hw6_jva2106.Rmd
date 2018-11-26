@@ -137,3 +137,28 @@ ggplot(child_df, aes(x = gaweeks, y = bwt)) + geom_point() + geom_smooth(method 
 
 ```
 
+As we can see from the plots - birthweight seems to be normally distributed while there is a slight left skew for the gestational age in weeks plot.
+
+```{r}
+
+lin_reg = lm(bwt ~ gaweeks + babysex + momage + mrace  + wtgain + smoken, data = child_df)
+
+lin_reg %>% 
+  broom::tidy()
+
+```
+ 
+Plotting a model of residuals against fitted values using add_predictions and add_residuals
+
+```{r}
+
+child_df %>% 
+  modelr::add_predictions(lin_reg) %>% 
+  modelr::add_residuals(lin_reg) %>% 
+  ggplot(aes(x = pred, y = resid)) + geom_point() +
+  labs(x = "Predicted value", 
+       y = "Residual")
+
+```
+
+
