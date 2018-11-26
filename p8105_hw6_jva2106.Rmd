@@ -161,4 +161,65 @@ child_df %>%
 
 ```
 
+Comparing 3 non-nested models:
 
+Let's use cross-validation methods to compare the 3 models below - 
+
+```{r}
+
+two_fit = lm(bwt ~ blength + gaweeks, data = child_df)
+
+three_fit = lm(bwt ~ bhead * blength *babysex, data = child_df)
+
+```
+
+Cross validation -
+
+```{r}
+
+set.seed(1)
+
+cross_df =
+  crossv_mc(child_df, 100) %>% 
+  mutate(train = map(train, as_tibble),
+         test = map(test, as_tibble))
+
+```
+
+```{r}
+
+cross_val = cross_df %>% 
+  mutate(two_fit = map(train, ~ lm(bwt ~ blength + gaweeks, data = .x)),
+         three_fit = map(train, ~ lm(bwt ~ bhead * blength *babysex, data = .x)),
+         lin_reg = map(train, ~ lm(bwt ~ gaweeks + babysex + momage + mrace  + wtgain + smoken, data = .x))) %>% 
+  mutate(rmse_two_fit = map2_dbl(two_fit, test, ~ rmse(model = .x, data = .y)),
+         rmse_three_fit = map2_dbl(three_fit, test, ~ rmse(model = .x, data = .y)),
+         rmse_lin_reg = map2_dbl(lin_reg, test, ~ rmse(model = .x, data = .y)))
+
+```
+
+
+```{r}
+
+cross_val %>% 
+  select(starts_with("rmse")) %>% 
+  gather(key = model, value = rmse) %>% 
+   mutate(model = str_replace(model, "rmse_", ""),
+         model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse)) + geom_violin()
+
+```
+
+```{r}
+
+cross_val %>% 
+  select(starts_with("rmse")) %>% 
+  gather(key = model, value = rmse) %>% 
+  group_by(model) %>% 
+  summarize(mean_rmse = mean(rmse)) %>% 
+  arrange(mean_rmse) %>% 
+  knitr::kable(digits = 3)
+
+```
+
+From the above code chunk, we get the lowest root mean square error for model three fit (290.156) which has three terms with interactions. Hence, we can conclude that it is a better fitting model 
